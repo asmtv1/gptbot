@@ -1,17 +1,14 @@
 {
-  "name": "jptbot",
+  "name": "gptbot",
   "version": "1.0.0",
-  "description": "",
+  "description": "Telegram bot using OpenAI API",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
-    "dotenv": "^16.4.5",
-    "openai": "^4.52.7",
-    "telegraf": "^4.16.3"
+    "dotenv": "^10.0.0",
+    "telegraf": "^4.0.0",
+    "openai": "^3.0.0"
   }
 }
