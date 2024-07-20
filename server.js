@@ -1,62 +1,54 @@
 require("dotenv").config();
 const { Telegraf } = require("telegraf");
-const { OpenAI } = require("openai");
-const http = require("http");
+const { Configuration, OpenAIApi } = require("openai");
 
 const telegramToken = process.env.TELEGRAM_TOKEN;
 const openaiKey = process.env.OPENAI_KEY;
 
-const openai = new OpenAI({
+const configuration = new Configuration({
   apiKey: openaiKey,
 });
 
+const openai = new OpenAIApi(configuration);
+
 const bot = new Telegraf(telegramToken);
 
-// Словарь для хранения контекста сообщений пользователей
-const userContexts = {};
+let conversationHistory = {};
 
 bot.on("text", async (ctx) => {
-  const userId = ctx.message.from.id;
-  const userMessage = ctx.message.text;
-
-  // Если у пользователя еще нет контекста, создаем его
-  if (!userContexts[userId]) {
-    userContexts[userId] = [];
+  const chatId = ctx.message.chat.id;
+  
+  // Initialize conversation history if not present
+  if (!conversationHistory[chatId]) {
+    conversationHistory[chatId] = [];
   }
 
-  // Добавляем новое сообщение пользователя в контекст
-  userContexts[userId].push({ role: "user", content: userMessage });
+  // Add user's message to the conversation history
+  conversationHistory[chatId].push({ role: "user", content: ctx.message.text });
+
+  // Maintain a maximum length of conversation history to avoid excessive token usage
+  if (conversationHistory[chatId].length > 10) {
+    conversationHistory[chatId].shift(); // Remove the oldest message to maintain the size
+  }
 
   try {
-    // Создаем запрос к OpenAI с учетом контекста
-    const response = await openai.chat.completions.create({
+    const response = await openai.createChatCompletion({
       model: "gpt-3.5-turbo",
-      messages: userContexts[userId],
+      messages: conversationHistory[chatId],
     });
 
-    const botReply = response.choices[0].message.content;
+    const botReply = response.data.choices[0].message.content;
 
-    // Добавляем ответ бота в контекст
-    userContexts[userId].push({ role: "assistant", content: botReply });
+    // Add the bot's reply to the conversation history
+    conversationHistory[chatId].push({ role: "assistant", content: botReply });
 
     ctx.reply(botReply);
   } catch (error) {
     console.error("Error:", error);
-    ctx.reply("Sorry, something went wrong.");
+    ctx.reply("Ошибка. Спроси Андрей что не так...");
   }
 });
 
 bot.launch().then(() => {
-  console.log("Bot is running...");
-});
-
-// Добавляем простой HTTP-сервер
-const server = http.createServer((req, res) => {
-  res.writeHead(200, { "Content-Type": "text/plain" });
-  res.end("Hello, this is a placeholder server!\n");
-});
-
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log(`Server is listening on port ${PORT}`);
+  console.log("Бот запущен");
 });
