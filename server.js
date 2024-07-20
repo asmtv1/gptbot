@@ -1,15 +1,13 @@
 require("dotenv").config();
 const { Telegraf } = require("telegraf");
-const { Configuration, OpenAIApi } = require("openai");
+const { OpenAI } = require("openai");
 
 const telegramToken = process.env.TELEGRAM_TOKEN;
 const openaiKey = process.env.OPENAI_KEY;
 
-const configuration = new Configuration({
+const openai = new OpenAI({
   apiKey: openaiKey,
 });
-
-const openai = new OpenAIApi(configuration);
 
 const bot = new Telegraf(telegramToken);
 
@@ -32,12 +30,12 @@ bot.on("text", async (ctx) => {
   }
 
   try {
-    const response = await openai.createChatCompletion({
+    const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: conversationHistory[chatId],
     });
 
-    const botReply = response.data.choices[0].message.content;
+    const botReply = response.choices[0].message.content;
 
     // Add the bot's reply to the conversation history
     conversationHistory[chatId].push({ role: "assistant", content: botReply });
