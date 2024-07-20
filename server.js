@@ -12,13 +12,34 @@ const openai = new OpenAI({
 
 const bot = new Telegraf(telegramToken);
 
+// Словарь для хранения контекста сообщений пользователей
+const userContexts = {};
+
 bot.on("text", async (ctx) => {
+  const userId = ctx.message.from.id;
+  const userMessage = ctx.message.text;
+
+  // Если у пользователя еще нет контекста, создаем его
+  if (!userContexts[userId]) {
+    userContexts[userId] = [];
+  }
+
+  // Добавляем новое сообщение пользователя в контекст
+  userContexts[userId].push({ role: "user", content: userMessage });
+
   try {
+    // Создаем запрос к OpenAI с учетом контекста
     const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
-      messages: [{ role: "user", content: ctx.message.text }],
+      messages: userContexts[userId],
     });
-    ctx.reply(response.choices[0].message.content);
+
+    const botReply = response.choices[0].message.content;
+
+    // Добавляем ответ бота в контекст
+    userContexts[userId].push({ role: "assistant", content: botReply });
+
+    ctx.reply(botReply);
   } catch (error) {
     console.error("Error:", error);
     ctx.reply("Sorry, something went wrong.");
