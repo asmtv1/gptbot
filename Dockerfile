@@ -1,20 +1,20 @@
-# Use the official Node.js image
-FROM node:20
+# Use an official Node.js runtime as a parent image
+FROM node:16
 
-# Create and change to the app directory
+# Set the working directory in the container
 WORKDIR /usr/src/app
 
-# Copy application dependency manifests to the container image.
+# Copy package.json and package-lock.json to the working directory
 COPY package*.json ./
 
 # Install dependencies
 RUN npm install
 
-# Copy the rest of your application code to the container image.
+# Copy the rest of the application code to the working directory
 COPY . .
 
 # Expose the port the app runs on
 EXPOSE 3000
 
-# Run the web service on container startup.
-CMD [ "node", "server.js" ]
+# Define the command to run the app
+CMD ["node", "server.js"]
