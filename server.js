@@ -45,10 +45,10 @@ bot.on("text", async (ctx) => {
     ctx.reply(botReply);
   } catch (error) {
     console.error("Error:", error);
-    ctx.reply("Ошибка. Спроси Андрей что не так...");
+    ctx.reply("Sorry, something went wrong.");
   }
 });
 
 bot.launch().then(() => {
-  console.log("Бот запущен");
+  console.log("Bot is running...");
 });
