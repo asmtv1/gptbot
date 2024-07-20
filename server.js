@@ -1,6 +1,9 @@
 require("dotenv").config();
 const { Telegraf } = require("telegraf");
 const { OpenAI } = require("openai");
+const express = require("express");
+const app = express();
+const port = process.env.PORT || 3000;
 
 const telegramToken = process.env.TELEGRAM_TOKEN;
 const openaiKey = process.env.OPENAI_KEY;
@@ -47,6 +50,12 @@ bot.on("text", async (ctx) => {
   }
 });
 
+// Start Telegraf bot
 bot.launch().then(() => {
   console.log("Bot is running...");
+});
+
+// Use Express to ensure the server is listening on port 3000
+app.listen(port, () => {
+  console.log(`Server is listening on port ${port}`);
 });
