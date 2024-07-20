@@ -1,7 +1,8 @@
+const http = require("http");
+
 require("dotenv").config();
 const { Telegraf } = require("telegraf");
 const { OpenAI } = require("openai");
-const http = require("http");
 
 const telegramToken = process.env.TELEGRAM_TOKEN;
 const openaiKey = process.env.OPENAI_KEY;
@@ -15,6 +16,7 @@ const bot = new Telegraf(telegramToken);
 // Словарь для хранения контекста сообщений пользователей
 const userContexts = {};
 
+// Обработка текстовых сообщений
 bot.on("text", async (ctx) => {
   const userId = ctx.message.from.id;
   const userMessage = ctx.message.text;
@@ -50,10 +52,15 @@ bot.launch().then(() => {
   console.log("Bot is running...");
 });
 
-// Добавляем простой HTTP-сервер
+// Добавляем простой HTTP-сервер для проверки состояния
 const server = http.createServer((req, res) => {
-  res.writeHead(200, { "Content-Type": "text/plain" });
-  res.end("Hello, this is a placeholder server!\n");
+  if (req.method === 'GET' && req.url === '/') {
+    res.writeHead(200, { "Content-Type": "text/plain" });
+    res.end("Hello, this is a placeholder server!\n");
+  } else {
+    res.writeHead(404, { "Content-Type": "text/plain" });
+    res.end("Not Found\n");
+  }
 });
 
 const PORT = process.env.PORT || 3000;
